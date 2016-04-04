@@ -20,7 +20,7 @@ processEnumObject(CommentState);
 
 module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 	let DataTypes = sequelize.Sequelize;
-	const LinkType = BigFileLink.LinkType;
+	const LinkType = BigFileLink.LinkTypes;
 	let Comment = sequelize.define('Comment', {
 		type: {
 			type: DataTypes.ENUM({values: Object.keys(CommentType)})
