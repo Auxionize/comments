@@ -1,6 +1,6 @@
 # comments
 Generic comments framework for sequelize
 ```
-// TODO
+// TODO documentation
 
 ```
