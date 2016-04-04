@@ -58,6 +58,8 @@ module.exports = function (sequelize, User, Comment) {
 		}
 	});
 
+	CommentReport.States = CommentReportState;
+
 	/*
 		Relations
 	 */
