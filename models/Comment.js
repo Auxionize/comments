@@ -231,6 +231,7 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 	});
 
 	Comment.Types = CommentType;
+	Comment.States = CommentState;
 
 	/*
 		Relations
