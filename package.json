@@ -1,20 +1,35 @@
 {
-  "name": "aux-comments",
-  "version": "1.0.0",
-  "description": "Generic Comments",
+  "name": "comments",
+  "version": "0.1.0",
+  "description": "Generic comments framework for sequelize",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Auxionize/comments.git"
+  },
+  "keywords": [
+    "comments"
+  ],
+  "author": "Iordan Georgiev <iordan340@gmail.com> (http://auxionize.com)",
   "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Auxionize/comments/issues"
+  },
+  "homepage": "https://github.com/Auxionize/comments#readme",
   "devDependencies": {
-    "chai": "^3.5.0",
-    "chai-as-promised": "^5.2.0",
-    "co": "^4.6.0",
-    "co-mocha": "^1.1.2",
-    "mocha": "^2.4.5",
-    "pg": "^4.4.4",
-    "sequelize": "^3.19.2"
+	"chai": "^3.5.0",
+	"chai-as-promised": "^5.2.0",
+	"co-mocha": "^1.1.2",
+	"mocha": "^2.4.5",
+	"pg": "^4.4.4",
+	"sequelize": "^3.19.2",
+	"stray": "^0.1.2"
+  },
+  "dependencies": {
+	"co": "^4.6.0",
+	"lodash": "^4.5.1"
   }
 }
