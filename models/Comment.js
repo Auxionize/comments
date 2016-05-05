@@ -114,7 +114,7 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 				comment = yield this.create(obj);
 
 				for(let attachment of attachments) {
-					yield BigFileLink.mutateLink(attachment.linkId, LinkType.COMM_ATTACHMENT, comment.id);
+					yield BigFile.link(attachment.uuid, LinkType.COMM_ATTACHMENT, comment.id);
 				}
 
 				return comment;
