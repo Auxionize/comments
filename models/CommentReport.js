@@ -61,7 +61,7 @@ module.exports = function (sequelize, User, Comment) {
 	CommentReport.States = CommentReportState;
 
 	/*
-		Relations
+	 Relations
 	 */
 	CommentReport.belongsTo(User, {foreignKey: {allowNull: false}});
 	CommentReport.belongsTo(Comment, {foreignKey: {allowNull: false}});

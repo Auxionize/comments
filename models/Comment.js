@@ -4,6 +4,8 @@
 'use strict';
 
 const processEnumObject = require('../utils/enum').processEnumObject;
+const _ = require('lodash');
+let CommentsSummary = null;
 let CommentType = {
 	Company: '' ,
 	Auction: '' ,
@@ -46,8 +48,74 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 	}, {
 		hierarchy: true,
 		classMethods: {
+			plugSummaryModel: function(model) {
+				CommentsSummary = model;
+			},
+
 			hasManyWith: function(model) {
 				this.hasMany(model);
+			},
+
+			updateCache: function*(comment, direction, extraDecrement) {
+				let self = this;
+
+				var commentCache = yield CommentsSummary.findOne({where: {
+					context: comment.type,
+					entityId: comment.entityId
+				}});
+
+				if(commentCache === null && direction === 'increment') {
+					yield CommentsSummary.create({
+						CommentId: comment.id,
+						context: comment.type,
+						entityId: comment.entityId,
+						totalComments: 1,
+						totalParentComments: 1,
+						dateLastAdded: comment.date
+					});
+				}
+				else if(commentCache !== null && direction === 'increment') {
+					if(comment.parentId === null) {
+						++commentCache.totalParentComments;
+					}
+
+					++commentCache.totalComments;
+					commentCache.CommentId = comment.id;
+					commentCache.dateLastAdded = comment.date;
+
+					yield commentCache.save();
+				}
+				else if(commentCache !== null && direction === 'decrement') {
+					extraDecrement = extraDecrement || 0;
+
+					if(comment.parentId === null) {
+						--commentCache.totalParentComments;
+					}
+
+					--commentCache.totalComments;
+
+					if(extraDecrement > 0) {
+						commentCache.totalComments = commentCache.totalComments - extraDecrement;
+					}
+
+					var successor = yield self.findOne({where: {
+						type: comment.type,
+						entityId: comment.entityId,
+						state: 'Active'
+					},
+						order: [['date', 'DESC']]
+					});
+
+					if(successor === null) {
+						yield commentCache.destroy();
+					}
+					else {
+						commentCache.CommentId = successor.id;
+						commentCache.dateLastAdded = successor.date;
+						yield commentCache.save();
+					}
+
+				}
 			},
 
 			addHidden: function(where, admin){
@@ -89,7 +157,35 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 			},
 
 			setState: function*(id, state) {
-				return yield this.update({state}, {where: {id}, returning: true});
+				var updateResult = yield this.update({state}, {where: {id}, returning: true});
+
+				if(updateResult[0] && updateResult[0] > 0) {
+					let comment = updateResult[1][0].dataValues;
+					let direction = comment.state === 'Active' ? 'increment' : 'decrement';
+					let extraDecrement = 0;
+
+					if(comment.parentId === null && direction === 'decrement') {
+						// check if has children and set them to Hidden
+						let secondaryUpdateResult = yield this.update(
+							{state},
+							{
+								where: {parentId: comment.id},
+								returning: true
+							});
+
+						if(secondaryUpdateResult[0] > 0) {
+							for(var i = 0; i < secondaryUpdateResult[1].length; i++) {
+								if(!_.isEmpty(secondaryUpdateResult[1][i]._changed)) {
+									extraDecrement++;
+								}
+							}
+						}
+					}
+
+					yield this.updateCache(comment, direction, extraDecrement);
+				}
+
+				return updateResult;
 			},
 
 			makePublic: function*(id) {
@@ -97,7 +193,6 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 			},
 
 			add: function*(context, type, entityId, parentId, AuthorReferenceId, text, ReferenceId,  attachments) {
-				var comment;
 				var obj = {
 					type,
 					entityId,
@@ -111,7 +206,9 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 					state: CommentState.Active
 				};
 
-				comment = yield this.create(obj);
+				var comment = yield this.create(obj);
+
+				yield this.updateCache(comment, 'increment');
 
 				for(let attachment of attachments) {
 					yield BigFile.link(attachment.uuid, LinkType.COMM_ATTACHMENT, comment.id);
@@ -234,7 +331,7 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 	Comment.States = CommentState;
 
 	/*
-		Relations
+	 Relations
 	 */
 	Comment.belongsTo(User, {foreignKey: {notNull: true}});
 	// The reference of the creator (or null for admins)

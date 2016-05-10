@@ -6,12 +6,10 @@
 module.exports = function(sequelize, User, Reference, BigFile, BigFileLink) {
 	let Comment = require('./models/Comment')(sequelize, User, Reference, BigFile, BigFileLink);
 	let CommentReport = require('./models/CommentReport')(sequelize, User, Comment);
+	let CommentsSummary = require('./models/CommentsSummary')(sequelize, Comment);
 
 	Comment.hasManyWith(CommentReport);
-	// TODO Comments logic
+	Comment.plugSummaryModel(CommentsSummary);
 
-	return {
-		Comment: Comment,
-		CommentReport: CommentReport
-	};
+	return {Comment, CommentReport, CommentsSummary};
 };
