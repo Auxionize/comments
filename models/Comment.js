@@ -129,7 +129,6 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 						'id',
 						'type',
 						'email',
-						'username',
 						'fullName'
 					]
 				});
