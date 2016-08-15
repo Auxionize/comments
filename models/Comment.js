@@ -261,7 +261,7 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 
 
 				for (let child of comment.children) {
-					child.parent = child.dataValues.parent = comment.toJSON();
+					child.parent = child.dataValues.parent = comment.id;//comment.toJSON();
 				}
 
 				return comment;
@@ -314,7 +314,7 @@ module.exports = function (sequelize, User, Reference, BigFile, BigFileLink) {
 
 				for (let comment of comments.rows) {
 					for (let child of comment.children) {
-						child.parent = child.dataValues.parent = comment.toJSON();
+						child.parent = child.dataValues.parent = comment.id;//comment.toJSON();
 					}
 				}
 
